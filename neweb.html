@@ -1,0 +1,486 @@
+Hola, Tengo un juego en roblox studio, el juego se llama Game Of Color 2
+Te paso todos mis codigos
+me ayudas a poner nombre a mis niveles? quiero que los nombres de los niveles salga de bajo del nametag del jugador en el personaje
+ ejemplo Nivel 1 - Noob etc
+
+que salga de bajo del nametag del jugador en el personaje
+
+
+El script principal 'SistemaJuego' ubicado en serverscriptservice
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage =game:GetService("ServerStorage")
+local TweenService = game:GetService("TweenService")
+
+
+local mapas = ServerStorage.Mapas:GetChildren()	
+
+
+local colorValue = ReplicatedStorage.FolderValue.ColorValue
+local textoValue = ReplicatedStorage.FolderValue.TituloValue
+local invisibleValue = ReplicatedStorage.FolderValue.InvisibleValue
+
+
+--
+--Sistema de Juego
+while true do
+
+
+	repeat wait(5) until game.Players.NumPlayers >= 0	
+
+	local tablaJugadores = {}
+
+	for i = 5,1,-1 do
+		textoValue.Value =  "🎮 ¡Prepárate! La partida inicia en " .. i .. "..." Color3.fromRGB(0, 255, 127)
+		wait(1)
+	end
+
+	--Clonamos el Mapa
+	local elegirMapa1 = math.random(1)
+	local clonarMapa1 = mapas[1]:Clone()
+	clonarMapa1.Parent = game.Workspace.MapasJuego
+	local elegirMapa2 = math.random(2)
+	local clonarMapa2 = mapas[2]:Clone()
+	clonarMapa2.Parent = game.Workspace.MapasJuego
+	local elegirMapa3 = math.random(3)
+	local clonarMapa3 = mapas[3]:Clone()
+	clonarMapa3.Parent = game.Workspace.MapasJuego
+	local elegirMapa4 = math.random(4)
+	local clonarMapa4 = mapas[4]:Clone()
+	clonarMapa4.Parent = game.Workspace.MapasJuego
+
+	--Dándole COlor a los bloques
+	local tablaColores = {
+		{Color = Color3.fromRGB(0, 0, 0), Nombre = "Negro"},
+		{Color = Color3.fromRGB(255, 255, 255), Nombre = "Blanco"},
+		{Color = Color3.fromRGB(255, 0, 0), Nombre = "Rojo"},
+		{Color = Color3.fromRGB(0, 0, 255), Nombre = "Azul"},
+		{Color = Color3.fromRGB(0, 255, 0), Nombre = "Verde"},
+		{Color = Color3.fromRGB(255, 255, 0), Nombre = "Amarillo"},
+		{Color = Color3.fromRGB(255, 0, 255), Nombre = "Rosa"},
+		{Color = Color3.fromRGB(255, 85, 0), Nombre = "Naranja"},
+		{Color = Color3.fromRGB(85, 255, 255), Nombre = "Turquesa"},
+		{Color = Color3.fromRGB(85, 85, 127), Nombre = "Lavanda"},
+		{Color = Color3.fromRGB(170, 85, 0), Nombre = "Cobre"},
+		{Color = Color3.fromRGB(85, 0, 127), Nombre = "Violeta"},
+		{Color = Color3.fromRGB(255, 170, 255), Nombre = "Lavanda Claro"},
+		{Color = Color3.fromRGB(0, 170, 255), Nombre = "Azul Claro"},
+		{Color = Color3.fromRGB(0, 85, 0), Nombre = "Verde Oscuro"},
+	}
+
+	-- Función para actualizar el texto con el nombre y temporizador del color
+	local function actualizarTextoConColorYTiempo(nombreColor, color, tiempo)
+		textoValue.Value = "Color Elegido: " .. nombreColor .. "\nTiempo: " .. tiempo  -- ✅ Usar .Value
+		-- La propiedad TextColor3 no existe en un StringValue, así que ignora esta línea.
+	end
+
+	--Pintamos los bloques del Mapa1
+	local function asignarColores(mapa)
+		for _, part in pairs(mapa.Mapa:GetChildren()) do
+			local numeroColor = math.random(1, #tablaColores)
+			part.Color = tablaColores[numeroColor].Color  -- ✅ Se corrige la asignación
+		end
+	end
+
+	-- Luego puedes usarla de esta forma:
+	for _, mapa in pairs({clonarMapa1, clonarMapa2, clonarMapa3, clonarMapa4}) do
+		asignarColores(mapa)
+	end
+
+	--Transportando a los jugadores	
+	textoValue.Value = "🌍 Transportando jugadores al mapa..." Color3.fromRGB(0, 170, 255)
+	wait(2)	
+
+	textoValue.Value = "🎲 ¡¿Estas preparado?! 🎲"
+	wait(1)
+
+	pcall(function()
+		for i , plr in pairs(game.Players:GetPlayers())do
+			if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				table.insert(tablaJugadores , plr)
+				plr.Character.HumanoidRootPart.CFrame = clonarMapa1.Posicion.CFrame
+
+				local confirmadorJugando = Instance.new("BoolValue")
+				confirmadorJugando.Name = "ConfirmadorJugando"
+				confirmadorJugando.Parent = plr.Character
+			end
+		end
+	end)
+
+
+	for i = 5,1,-1 do
+		textoValue.Value = "🎮 El juego comenzara en "..i.." ¡Buena suerte! 🍀" Color3.fromRGB(85, 255, 0)
+		wait(1)
+	end
+
+	invisibleValue.Value = true
+	--INICIANDO JUEGO	
+	while true do
+		local numeroColor = math.random(1, #tablaColores) -- ✅ Elegimos un solo color al inicio
+		local colorElegido = tablaColores[numeroColor].Color
+		local nombreColor = tablaColores[numeroColor].Nombre
+		colorValue.Value = colorElegido
+
+		for i = 5, 1, -1 do
+			actualizarTextoConColorYTiempo(nombreColor, colorElegido, i) -- ✅ Ahora usa siempre el mismo color
+			wait(1)
+		end
+		-- Fin de la ronda: Ocultamos el indicador del color elegido
+		textoValue.Value = ""
+		invisibleValue.Value = false
+
+		-- Lógica para destruir los bloques
+		for _, mapa in pairs({clonarMapa1, clonarMapa2, clonarMapa3, clonarMapa4}) do
+			for _, bloque in pairs(mapa.Mapa:GetChildren()) do
+				if bloque.Color == colorElegido then
+					-- No desaparece
+				else
+					bloque.Transparency = 1
+					bloque.CanCollide = false
+				end
+			end
+		end
+		wait(2)
+
+		--Rearmamos el Mapa y mostramos los cambios
+		for _, mapa in pairs({clonarMapa1, clonarMapa2, clonarMapa3, clonarMapa4}) do
+			for _, part in pairs(mapa.Mapa:GetChildren()) do
+				local numeroColor = math.random(1, #tablaColores)
+				local colorElegido = tablaColores[numeroColor].Color
+				part.Transparency = 0
+				part.CanCollide = true
+				part.Color = colorElegido
+			end
+		end
+		wait(1)
+		--Verificar Si el Jugador Sigue en el Campo
+		pcall(function()				
+
+			for i = #tablaJugadores, 1, -1 do
+				local jugador = tablaJugadores[i]
+				if not jugador.Character or not jugador.Character:FindFirstChild("ConfirmadorJugando") then
+					table.remove(tablaJugadores, i)
+				end
+			end
+
+		end)
+
+		-- Verificador si hay o no ganadores
+
+		if #tablaJugadores == 1 then
+			local ganador = tablaJugadores[1]
+			local userId = ganador.UserId
+
+			local displayName = (ganador.Character 
+				and ganador.Character:FindFirstChildOfClass("Humanoid") 
+				and ganador.Character:FindFirstChildOfClass("Humanoid").DisplayName)
+				or ganador.Name
+
+			-- Actualizamos GanadorInfo con el formato "Nombre;UserId"
+			game.ReplicatedStorage.FolderValue.GanadorInfo.Value = ganador.displayName  .. ";" .. tostring(userId)
+
+			pcall(function()
+				local ls = ganador:FindFirstChild("leaderstats")
+				if ls then
+					ls.Win.Value = ls.Win.Value + 1
+					ls.Gold.Value = ls.Gold.Value + 5
+					ls.Experience.Value = ls.Experience.Value + 10
+				end
+				wait(7)
+				if ganador.Character and ganador.Character:FindFirstChild("HumanoidRootPart") then
+					ganador.Character.HumanoidRootPart.CFrame = game.Workspace.SpawnInicio.SpawnLocation.CFrame
+				end
+			end)
+
+			wait(1)
+			game.ReplicatedStorage.FolderValue.GanadorInfo.Value = ""
+			textoValue.Value = ""
+			invisibleValue.Value = false
+
+			break
+		end
+
+		--No Hubo Ganador
+		if #tablaJugadores < 1 then
+			textoValue.Value = "🔥 ¡No hubo ganador!" Color3.fromRGB(255, 85, 0)
+			wait(3)
+			break
+		end
+	end
+
+	-- Eliminación de mapas y finalización de la ronda
+	for _, mapa in pairs({clonarMapa1, clonarMapa2, clonarMapa3, clonarMapa4}) do
+		mapa:Destroy()
+		textoValue.Value = "⏳ segundos restantes..."
+		wait(1)
+	end
+end
+
+Este es el script del sistema de niveles, se llama 'ScriptSystemLvL' esta ubicado en ServerScriptService
+
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DataStoreService = game:GetService("DataStoreService")
+local LevelSystem = require(ReplicatedStorage:WaitForChild("LevelSystem"))
+local updateExperienceEvent = ReplicatedStorage:WaitForChild("UpdateExperience")
+local updateGoldEvent = ReplicatedStorage:WaitForChild("UpdateGold")
+local giveToolEvent = ReplicatedStorage:WaitForChild("GiveTool")
+local gainExpFolder = workspace:WaitForChild("GainEXP")
+local playerDataStore = DataStoreService:GetDataStore("PlayerData")
+
+Players.PlayerAdded:Connect(function(player)
+	
+	-- Crear la carpeta leaderstats
+	local leaderstats = Instance.new("Folder")
+	leaderstats.Name = "leaderstats"
+	leaderstats.Parent = player
+
+	local experience = Instance.new("IntValue")
+	experience.Name = "Experience"
+	experience.Value = 0
+	experience.Parent = leaderstats
+
+	local level = Instance.new("IntValue")
+	level.Name = "Level"
+	level.Value = 1
+	level.Parent = leaderstats
+
+	local gold = Instance.new("IntValue")
+	gold.Name = "Gold"
+	gold.Value = 0
+	gold.Parent = leaderstats
+
+	local win = Instance.new("IntValue")
+	win.Name = "Win"
+	win.Value = 0
+	win.Parent = leaderstats
+
+	-- Cargar datos guardados
+	local success, data = pcall(function()
+		return playerDataStore:GetAsync(player.UserId)
+	end)
+	if success and data then
+		experience.Value = data.Experience or 0
+		level.Value = data.Level or 1
+		-- Forzar el nivel a ser al menos 1 si se carga 0 o menos
+		if level.Value <= 0 then
+			level.Value = 1
+		end
+		gold.Value = data.Gold or 0
+		win.Value = data.Win or 0
+
+		print("Datos cargados para", player.Name, "Experience:", experience.Value, "Level:", level.Value, "Gold:", gold.Value, "Win:", win.Value)
+
+		local updatedLevel, updatedExperience, maxExperience = LevelSystem.UpdateLevelAndExperience(level.Value, experience.Value)
+		level.Value = updatedLevel
+		experience.Value = updatedExperience
+	else
+		experience.Value = 0
+		level.Value = 1
+		gold.Value = 0
+		win.Value = 0
+	end
+	
+	player.CharacterAdded:Connect(function(character)
+		-- Esperar un instante para asegurarse de que el Character está completamente cargado
+		wait(1)
+
+		-- Actualizar la UI en el cliente al respawnear
+		updateExperienceEvent:FireClient(player, leaderstats.Experience.Value, leaderstats.Level.Value, LevelSystem.GetMaxExperience(leaderstats.Level.Value))
+		updateGoldEvent:FireClient(player, leaderstats.Gold.Value)
+		print("Se actualizó la UI para", player.Name, "al respawnear.")
+	end)
+	
+	local function addExperience(experienceToAdd)
+		local newExperience, newLevel, maxExperience, rewardGold, rewards = LevelSystem.AddExperience(
+			experience.Value, level.Value, experienceToAdd
+		)
+		experience.Value = newExperience
+		level.Value = newLevel
+		gold.Value = gold.Value + rewardGold
+
+		updateExperienceEvent:FireClient(player, newExperience, newLevel, maxExperience)
+		updateGoldEvent:FireClient(player, gold.Value)
+
+		for _, reward in pairs(rewards) do
+			if reward.ToolName and reward.ToolPath then
+				local toolClone = reward.ToolPath:Clone()
+				toolClone.Parent = player.Backpack
+				giveToolEvent:FireClient(player, reward.ToolName)
+			end
+		end
+	end
+
+	-- Recolección de experiencia
+	--for _, collectible in pairs(gainExpFolder:GetChildren()) do
+		--if collectible:IsA("BasePart") then
+		--	collectible.Touched:Connect(function(hit)
+			--	local character = hit.Parent
+			--	local playerWhoTouched = Players:GetPlayerFromCharacter(character)
+			--	if playerWhoTouched == player then
+			--		local randomExp = math.random(25, 100)
+			--		addExperience(randomExp)
+			--		collectible:Destroy()
+			--	end
+		--	end)
+		--end
+	--end
+
+	-- Opcional: Conectar eventos para actualizar la UI cuando cambian los valores
+	experience.Changed:Connect(function()
+		updateExperienceEvent:FireClient(player, experience.Value, level.Value, LevelSystem.GetMaxExperience(level.Value))
+	end)
+	gold.Changed:Connect(function()
+		updateGoldEvent:FireClient(player, gold.Value)
+	end)
+end)
+
+-- Guardar datos cuando el jugador sale
+Players.PlayerRemoving:Connect(function(player)
+	local success, errorMessage = pcall(function()
+		playerDataStore:SetAsync(player.UserId, {
+			Experience = player.leaderstats.Experience.Value,
+			Level = player.leaderstats.Level.Value,
+			Gold = player.leaderstats.Gold.Value,
+			Win = player.leaderstats.Win.Value,
+		})
+	end)
+	if success then
+		print("Datos guardados para", player.Name)
+	else
+		warn("No se guardaron los datos para", player.Name, ":", errorMessage)
+	end
+end)
+
+-- Guardado de seguridad al cerrar el juego
+game:BindToClose(function()
+	for _, player in pairs(Players:GetPlayers()) do
+		pcall(function()
+			playerDataStore:SetAsync(player.UserId, {
+				Experience = player.leaderstats.Experience.Value,
+				Level = player.leaderstats.Level.Value,
+				Gold = player.leaderstats.Gold.Value,
+				Win = player.leaderstats.Win.Value,
+			})
+			print("Datos guardados para", player.Name)
+		end)
+	end
+end)
+
+
+Este es el localscript del sistema de niveles que esta en startergui.screengui llamado 'LevelFrame'.localscript
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- servicios y utilidades
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local updateExperienceEvent = ReplicatedStorage:WaitForChild("UpdateExperience")
+local updateGoldEvent = ReplicatedStorage:WaitForChild("UpdateGold")
+local levelText = script.Parent:WaitForChild("Level")
+local goldText = script.Parent:WaitForChild("GoldFrame"):WaitForChild("Gold")
+local experienceBar = script.Parent:WaitForChild("Frame"):WaitForChild("Experience")
+--------------------------------------------------------------------------------------------------------------------------------
+-- cambia numeros grandes por letras
+
+local function FormatGold(amount)
+	if amount >= 1e6 then
+		return string.format("%.1fM", amount / 1e6)
+	elseif amount >= 1e3 then
+		return string.format("%.1fK", amount / 1e3)
+	else
+		return tostring(amount)
+	end
+end
+--------------------------------------------------------------------------------------------------------------------------------
+-- Anima la barra de experiencia
+
+local function AnimateExperienceBar(newProgress)
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local tweenGoal = { Size = UDim2.new(newProgress, 0, 1, 0) }
+	local tween = TweenService:Create(experienceBar, tweenInfo, tweenGoal)
+	tween:Play()
+end
+--------------------------------------------------------------------------------------------------------------------------------
+-- otorga los datos recibidos del servidor
+updateExperienceEvent.OnClientEvent:Connect(function(newExperience, newLevel, maxExperience)
+	print("Recibí datos: XP:", newExperience, "Nivel:", newLevel, "XP Max:", maxExperience)
+	local progress = newExperience / maxExperience
+	AnimateExperienceBar(progress)
+	levelText.Text = "Level " .. newLevel
+end)
+--------------------------------------------------------------------------------------------------------------------------------
+-- Actualiza el oro obtenido
+
+updateGoldEvent.OnClientEvent:Connect(function(currentGold)
+	goldText.Text = FormatGold(currentGold)
+end)
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+Este es el ModuleScript llamado 'LevelSystem' ubicado en ReplicatedStorage
+
+local LevelSystem = {}
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- Niveles y recompensas
+
+LevelSystem.MaxExperienceBase = 100 
+LevelSystem.RewardGoldPerLevel = {100, 150, 200, 250, 500, 600, 1000}
+LevelSystem.SpecialRewards = {
+	--[7] = {ToolName = "SpecialTool", ToolPath = game.ServerStorage.Tools:WaitForChild("SpecialTool")}
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- Funciones auxiliares
+
+function LevelSystem.GetMaxExperience(level)
+	return LevelSystem.MaxExperienceBase + ((level - 1) * 100)
+end
+
+function LevelSystem.GetRewardGold(level)
+	return LevelSystem.RewardGoldPerLevel[level] or 1000
+end
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- Función para actualizar nivel y experiencia con datos del Savedata
+
+function LevelSystem.UpdateLevelAndExperience(currentLevel, currentExperience)
+	local maxExperience = LevelSystem.GetMaxExperience(currentLevel)
+	
+--------------------------------------------------------------------------------------------------------------------------------	
+	-- Mientras la experiencia acumulada sea mayor o igual al máximo, sube de nivel
+	while currentExperience >= maxExperience do
+		currentExperience = currentExperience - maxExperience
+		currentLevel = currentLevel + 1
+		maxExperience = LevelSystem.GetMaxExperience(currentLevel)
+	end
+	return currentLevel, currentExperience, maxExperience
+end
+--------------------------------------------------------------------------------------------------------------------------------
+-- Funciones de nivel
+
+function LevelSystem.AddExperience(currentExperience, currentLevel, experienceToAdd)
+	local maxExperience = LevelSystem.GetMaxExperience(currentLevel)
+	local newExperience = currentExperience + experienceToAdd
+	local rewardGold = 0
+	local rewards = {}
+
+	while newExperience >= maxExperience do
+		newExperience = newExperience - maxExperience
+		currentLevel = currentLevel + 1
+		maxExperience = LevelSystem.GetMaxExperience(currentLevel)
+
+		rewardGold = rewardGold + LevelSystem.GetRewardGold(currentLevel)
+
+		if LevelSystem.SpecialRewards[currentLevel] then
+			table.insert(rewards, LevelSystem.SpecialRewards[currentLevel])
+		end
+	end
+
+	return newExperience, currentLevel, maxExperience, rewardGold, rewards
+end
+
+return LevelSystem
+
